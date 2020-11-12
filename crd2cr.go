@@ -1,9 +1,8 @@
-package main
+package crd2cr
 
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"sigs.k8s.io/yaml"
@@ -14,14 +13,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func handler(w http.ResponseWriter, req *http.Request) {
+func Handler(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	data, err := convert(body)
+	data, err := Convert(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -29,29 +28,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(w, string(data))
 }
 
-func webServer() error {
-	http.HandleFunc("/", handler)
-	fmt.Println("Listening on localhost:8080")
-	return http.ListenAndServe(":8080", nil)
-}
-
-func main() {
-	if err := webServer(); err != nil {
-		log.Fatal(err)
-	}
-	// data, err := ioutil.ReadAll(bufio.NewReader(os.Stdin))
-	// data, err := ioutil.ReadFile("schema.yaml")
-	// if err != nil {
-	// log.Fatal(err)
-	// }
-	// data, err = convert(data)
-	// if err != nil {
-	// log.Fatal(err)
-	// }
-	// fmt.Println(string(data))
-}
-
-func convert(data []byte) ([]byte, error) {
+func Convert(data []byte) ([]byte, error) {
 	s := v1.CustomResourceDefinition{}
 	if err := yaml.Unmarshal(data, &s); err != nil {
 		return nil, err
