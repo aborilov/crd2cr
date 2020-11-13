@@ -2,8 +2,6 @@ package crd2cr
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"sigs.k8s.io/yaml"
 
@@ -12,21 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
-
-func Handler(w http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	data, err := Convert(body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	fmt.Fprint(w, string(data))
-}
 
 func Convert(data []byte) ([]byte, error) {
 	s := v1.CustomResourceDefinition{}
@@ -48,7 +31,7 @@ func Convert(data []byte) ([]byte, error) {
 		unstructured.SetNestedMap(content, s, "spec")
 		res.SetUnstructuredContent(content)
 	}
-	res.SetName(fmt.Sprintf("%s_instance", s.Spec.Names.Singular))
+	res.SetName(fmt.Sprintf("%sInstance", s.Spec.Names.Singular))
 	res.SetGroupVersionKind(gvk)
 	j, err := res.MarshalJSON()
 	if err != nil {
@@ -77,6 +60,17 @@ func getValue(value v1.JSONSchemaProps) interface{} {
 		return 0.0
 	case "boolean":
 		return false
+	case "array":
+		if value.Items.Schema != nil {
+			value := getValue(*value.Items.Schema)
+			return []interface{}{value}
+		}
+		return ""
+	case "string":
+		if len(value.Enum) > 0 {
+			return string(value.Enum[0].Raw)
+		}
+		return ""
 	default:
 		return ""
 	}
