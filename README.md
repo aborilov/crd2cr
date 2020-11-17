@@ -7,3 +7,21 @@ It's very hard to write your own first `CR` based on a `CRD` openAPIV3Schema, th
 
 -----
 only `apiextensions.k8s.io/v1` version supported
+
+
+# Usage
+
+```
+Generate simple CR from CRD
+
+Usage:
+  crd2cr [flags]
+
+Flags:
+      --file string   file path. use STDIN by default
+  -h, --help          help for crd2cr
+```
+
+[![asciicast](https://asciinema.org/a/aE9iwwmaETNyX9SboSCmVZY0R.png)](https://asciinema.org/a/aE9iwwmaETNyX9SboSCmVZY0R)
+
+

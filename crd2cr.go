@@ -53,7 +53,6 @@ func getValue(value v1.JSONSchemaProps) interface{} {
 	case "object":
 		return parseObject(value.Properties)
 	case "integer":
-		fmt.Println(value.Minimum)
 		if value.Minimum != nil {
 			return *value.Minimum
 		}
